@@ -157,7 +157,7 @@ union select 'Sierra Leone'
 union select 'Singapore'
 union select 'Slovakia'
 union select 'Slovenia'
-union select 'olomon Islands'
+union select 'Solomon Islands'
 union select 'Somalia'
 union select 'South Africa'
 union select 'South Sudan'
@@ -168,6 +168,7 @@ union select 'Suriname'
 union select 'Sweden'
 union select 'Switzerland'
 union select 'Syrian Arab Republic'
+union select 'Taiwan'
 union select 'Tajikistan'
 union select 'Tanzania, United Republic of'
 union select 'Thailand'
@@ -186,9 +187,77 @@ union select 'United Kingdom of Great Britain and Northern Ireland'
 union select 'United States of America'
 union select 'Uruguay'
 union select 'Uzbekistan'
+union select 'Vatican City'
 union select 'Vanuatu'
 union select 'Venezuela, Bolivarian Republic of'
-union select 'Viet Nam'
+union select 'Vietnam'
 union select 'Yemen'
 union select 'Zambia'
 union select 'Zimbabwe'
+
+
+-- Update to get simple names
+
+update	Country
+set		Name = 'Bolivia'
+where	Name like '%Bolivia%'
+
+update	Country
+set		Name = 'Brunei'
+where	Name like '%Brunei%'
+
+update	Country
+set		Name = 'Democratic Republic of the Congo'
+where	Name = 'Congo, Democratic Republic of the'
+
+update	Country
+set		Name = 'Republic of the Congo'
+where	Name = 'Congo'
+
+update	Country
+set		Name = 'Iran'
+where	Name like '%Iran%'
+
+update	Country
+set		Name = 'North Korea'
+where	Name like '%Korea, Democratic%'
+
+update	Country
+set		Name = 'South Korea'
+where	Name like '%Korea, Republic%'
+
+update	Country
+set		Name = 'Laos'
+where	Name like '%Lao People%'
+
+update	Country
+set		Name = 'Micronesia'
+where	Name like '%Micronesia%'
+
+update	Country
+set		Name = 'Moldova'
+where	Name like '%Moldova%'
+
+update	Country
+set		Name = 'Russia'
+where	Name like '%Russia%'
+
+update	Country
+set		Name = 'Syria'
+where	Name like '%Syria%'
+
+update	Country
+set		Name = 'Tanzania'
+where	Name like '%Tanzania%'
+
+update	Country
+set		Name = 'Turkey'
+where	Name like '%Türkiye%'
+
+update	Country
+set		Name = 'United Kingdom'
+where	Name like '%United Kingdom%'
+
+update	Country
+set		Name = 'Venezuela'
+where	Name like '%Venezuela%'
