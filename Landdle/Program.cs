@@ -1,5 +1,6 @@
 using Landdle.Components;
 using Landdle.Data;
+using Landdle.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContext<DataContext>(/* options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("Landdle"))*/);
+
+builder.Services.AddScoped<IGuessService, GuessService>();
 
 var app = builder.Build();
 
