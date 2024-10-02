@@ -5,28 +5,63 @@
 
 <h3>Landdle</h3>
 
-<select @bind="selectedValue">
+<label for="country">Guess today's Land</label>
+<input name="country" list="country_datalist" @bind="selectedValue">
+
+<datalist id="country_datalist" >
     @foreach (var country in countries)
     {
         <option value="@country.Name">@country.Name</option>
     }
-</select>
-
+</datalist>
 
 <button class="btn btn-primary" @onclick="SendGuess">Guess!</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Country</th>
+            <th>Population</th>
+            <th>LandKM2</th>
+            <th>Continent</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var info in countryInformation)
+        {
+            <tr>
+                <td>@info.Country</td>
+                <td>@info.Population</td>
+                <td>@info.LandKM2</td>
+                <td>@info.Continent</td>
+            </tr>
+        }
+    </tbody>
+
+</table>
 
 @code {
     List<Country> countries = new List<Country>();
 
     protected override async Task OnInitializedAsync()
     {
-        countries = await GuessService.GetAllCountries();
+        countries = await GuessService.GetListOfAllCountryNames();
     }
 
     private string? selectedValue;
 
-    public void SendGuess()
+    List<CountryInformation> countryInformation = new List<CountryInformation>();
+
+    public async void SendGuess()
     {
-        
+        if (selectedValue != null) {
+            var chosenCountry = countries.Find(x => x.Name == selectedValue);
+            if (chosenCountry != null) {
+                var result = await GuessService.GuessCountry(chosenCountry.Id);
+                countryInformation.Add(result);
+                StateHasChanged();
+            }
+        }
     }
 }
