@@ -6,7 +6,7 @@
 <h3>Landdle</h3>
 
 <label for="country">Guess today's Land</label>
-<input name="country" list="country_datalist" @bind="selectedValue">
+<input name="country" list="country_datalist" @bind="selectedValue" placeholder="Land...">
 
 <datalist id="country_datalist" >
     @foreach (var country in countries)
@@ -15,7 +15,7 @@
     }
 </datalist>
 
-<button class="btn btn-primary" @onclick="SendGuess">Guess!</button>
+<button class="btn btn-primary" @onclick="SendGuess">@buttonValue</button>
 
 <table>
     <thead>
@@ -50,6 +50,7 @@
     }
 
     private string? selectedValue;
+    private string? buttonValue = "Guess!";
 
     List<CountryInformation> countryInformation = new List<CountryInformation>();
 
@@ -59,8 +60,14 @@
             var chosenCountry = countries.Find(x => x.Name == selectedValue);
             if (chosenCountry != null) {
                 var result = await GuessService.GuessCountry(chosenCountry.Id);
-                countryInformation.Add(result);
-                StateHasChanged();
+                countryInformation.Add(result);                
+
+                if (result.CorrectAnswer)
+                {
+                    buttonValue = "Correct!";
+                }
+
+                await InvokeAsync(() => StateHasChanged());
             }
         }
     }

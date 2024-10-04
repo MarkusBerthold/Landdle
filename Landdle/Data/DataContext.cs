@@ -24,5 +24,6 @@ namespace Landdle.Data
         public DbSet<Country> Country { get; set; }
         public DbSet<Continent> Continent { get; set; }
         public DbSet<CountryContinent> CountryContinent { get; set; }
+        public DbSet<CountryOfTheDay> CountryOfTheDay { get; set; }
     }
 }
