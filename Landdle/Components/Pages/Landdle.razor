@@ -5,36 +5,36 @@
 
 <h3>Landdle</h3>
 
-<label for="country">Guess today's Land</label>
-<input name="country" list="country_datalist" @bind="selectedValue" placeholder="Land...">
+<label for="country">Guesses left: @guessesLeft</label>
+<input name="country" list="country_datalist" @bind="selectedValue" style="width:280px" placeholder="Type a Land...">
 
-<datalist id="country_datalist" >
+<datalist id="country_datalist">
     @foreach (var country in countries)
     {
         <option value="@country.Name">@country.Name</option>
     }
 </datalist>
 
-<button class="btn btn-primary" @onclick="SendGuess">@buttonValue</button>
+<button class="btn btn-@(hasWon ? "success" : (guessesLeft > 0 ? "primary" : "danger"))" @onclick="SendGuess">@(hasWon ? "Correct!" : (guessesLeft > 0 ? "Guess!" : "Game Over!"))</button>
 
-<table>
+<table class="table">
     <thead>
         <tr>
-            <th>Country</th>
+            <th>Land</th>
             <th>Population</th>
-            <th>LandKM2</th>
+            <th>Size (km<sup>2</sup>)</th>
             <th>Continent</th>
         </tr>
     </thead>
 
     <tbody>
-        @foreach (var info in countryInformation)
+        @foreach (var guess in countryInformation)
         {
-            <tr>
-                <td>@info.Country</td>
-                <td>@info.Population</td>
-                <td>@info.LandKM2</td>
-                <td>@info.Continent</td>
+            <tr style="@(guess.Country == answer.Country ? "color:green" : "")">
+                <td>@guess.Country</td>
+                <td>@guess.Population.ToString("N0") @(ApplyHintToNumbers(guess.Population, "Population"))</td>
+                <td>@guess.LandKM2.ToString("N0") @(ApplyHintToNumbers(guess.LandKM2, "LandKM2"))</td>
+                <td style="color:@(ApplyContinentHint(guess.Continent))">@guess.Continent</td>
             </tr>
         }
     </tbody>
@@ -43,32 +43,82 @@
 
 @code {
     List<Country> countries = new List<Country>();
+    CountryInformation answer;
 
     protected override async Task OnInitializedAsync()
     {
         countries = await GuessService.GetListOfAllCountryNames();
+        answer = await GuessService.GetCountryInformation(-1);
     }
 
     private string? selectedValue;
-    private string? buttonValue = "Guess!";
+    private bool hasWon = false;
+    private int guessesLeft = 10;
 
     List<CountryInformation> countryInformation = new List<CountryInformation>();
 
     public async void SendGuess()
     {
-        if (selectedValue != null) {
-            var chosenCountry = countries.Find(x => x.Name == selectedValue);
-            if (chosenCountry != null) {
-                var result = await GuessService.GuessCountry(chosenCountry.Id);
-                countryInformation.Add(result);                
-
-                if (result.CorrectAnswer)
+        if (!hasWon && guessesLeft > 0)
+        {
+            if (selectedValue != null)
+            {
+                var chosenCountry = countries.Find(x => x.Name == selectedValue);
+                if (chosenCountry != null)
                 {
-                    buttonValue = "Correct!";
-                }
+                    var guess = await GuessService.GetCountryInformation(chosenCountry.Id);
 
-                await InvokeAsync(() => StateHasChanged());
+                    guessesLeft--;
+
+                    if (guess.Country == answer.Country)
+                    {
+                        hasWon = true;
+                    }
+
+                    countryInformation.Add(guess);
+                }
             }
         }
+        selectedValue = string.Empty;
+
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    public string ApplyContinentHint(string continent)
+    {
+        string hint;
+
+        if (continent == answer.Continent)
+        {
+            hint = "green";
+        }
+        else if (answer.Continent.Contains(continent) || continent.Contains(answer.Continent))
+        {
+            hint = "yellow";
+        }
+        else
+        {
+            hint = "black";
+        }
+
+        return hint;
+    }
+
+    public string ApplyHintToNumbers(int guessValue, string propertyName)
+    {
+        string hint = "";
+
+        var answerValue = (int)answer.GetType().GetProperty(propertyName).GetValue(answer);
+
+        if (guessValue > answerValue)
+        {
+            hint = "(down)";
+        }
+        else if (guessValue < answerValue)
+        {
+            hint = "(up)";
+        }
+
+        return hint;
     }
 }
