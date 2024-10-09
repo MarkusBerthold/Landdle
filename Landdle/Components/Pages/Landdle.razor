@@ -6,7 +6,7 @@
 <h3>Landdle</h3>
 
 <label for="country">Guesses left: @guessesLeft</label>
-<input name="country" list="country_datalist" @bind="selectedValue" style="width:280px" placeholder="Type a Land...">
+<input name="country" list="country_datalist" @bind="selectedValue" style="width:280px" placeholder="Type a Land..." autocomplete="off">
 
 <datalist id="country_datalist">
     @foreach (var country in countries)
@@ -16,6 +16,7 @@
 </datalist>
 
 <button class="btn btn-@(hasWon ? "success" : (guessesLeft > 0 ? "primary" : "danger"))" @onclick="SendGuess">@(hasWon ? "Correct!" : (guessesLeft > 0 ? "Guess!" : "Game Over!"))</button>
+<label style="color:red">@errorMsg</label>
 
 <table class="table">
     <thead>
@@ -30,7 +31,7 @@
     <tbody>
         @foreach (var guess in countryInformation)
         {
-            <tr style="@(guess.Country == answer.Country ? "color:green" : "")">
+            <tr style="@(guess.Country == answer.Country ? "color:green; font-weight:bold" : "")">
                 <td>@guess.Country</td>
                 <td>@guess.Population.ToString("N0") @(ApplyHintToNumbers(guess.Population, "Population"))</td>
                 <td>@guess.LandKM2.ToString("N0") @(ApplyHintToNumbers(guess.LandKM2, "LandKM2"))</td>
@@ -38,7 +39,6 @@
             </tr>
         }
     </tbody>
-
 </table>
 
 @code {
@@ -55,10 +55,14 @@
     private bool hasWon = false;
     private int guessesLeft = 10;
 
+    private string? errorMsg;
+
     List<CountryInformation> countryInformation = new List<CountryInformation>();
 
     public async void SendGuess()
     {
+        errorMsg = "";
+
         if (!hasWon && guessesLeft > 0)
         {
             if (selectedValue != null)
@@ -66,16 +70,26 @@
                 var chosenCountry = countries.Find(x => x.Name == selectedValue);
                 if (chosenCountry != null)
                 {
-                    var guess = await GuessService.GetCountryInformation(chosenCountry.Id);
-
-                    guessesLeft--;
-
-                    if (guess.Country == answer.Country)
+                    if (!countryInformation.Any(x => x.Country == chosenCountry.Name))
                     {
-                        hasWon = true;
-                    }
+                        var guess = await GuessService.GetCountryInformation(chosenCountry.Id);
+                        countryInformation.Add(guess);
 
-                    countryInformation.Add(guess);
+                        guessesLeft--;
+
+                        if (guess.Country == answer.Country)
+                        {
+                            hasWon = true;
+                        }
+                        else if (guessesLeft == 0)
+                        {
+                            countryInformation.Add(answer);
+                        }
+                    }
+                    else
+                    {
+                        errorMsg = "You have already guessed " + chosenCountry.Name + "!";
+                    }
                 }
             }
         }
@@ -86,7 +100,7 @@
 
     public string ApplyContinentHint(string continent)
     {
-        string hint;
+        string hint = "red";
 
         if (continent == answer.Continent)
         {
@@ -94,11 +108,21 @@
         }
         else if (answer.Continent.Contains(continent) || continent.Contains(answer.Continent))
         {
-            hint = "yellow";
+            hint = "orange";
         }
-        else
+        else if (answer.Continent.Contains("/") || continent.Contains("/"))
         {
-            hint = "black";
+            foreach (var a_partial in answer.Continent.Split("/"))
+            {
+                foreach (var g_partial in continent.Split("/"))
+                {
+                    if (a_partial == g_partial)
+                    {
+                        hint = "orange";
+                        break;
+                    }
+                }
+            }
         }
 
         return hint;
